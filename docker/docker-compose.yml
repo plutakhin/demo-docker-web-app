@@ -1,0 +1,42 @@
+﻿app:
+    image: busybox
+    command: /bin/true
+    volumes:
+        - ./../client:/var/www/client
+
+db:
+    image: mysql
+    expose:
+        - 3306:3306
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+
+rabbitmq:
+    image: rabbitmq:3-management
+    expose:
+        - 5672:5672
+    ports:
+        - 81:15672
+
+conf:
+    build: ./conf
+    ports:
+        - 80:80
+        - 88:9771
+    links:
+        - db
+        - rabbitmq
+    volumes_from:
+        - app
+    volumes:
+        - ./../client:/var/log/supervisor
+
+pma:
+    image: corbinu/docker-phpmyadmin
+    ports:
+        - 82:80
+    links:
+        - db:mysql
+    environment:
+        MYSQL_USERNAME: root
+        MYSQL_PASSWORD: root
